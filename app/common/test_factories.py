@@ -1,20 +1,11 @@
 from typing import Any
 
 import factory
-from factory.base import FactoryMetaClass
 
 from app.auth.services import hash_password
 from app.common.utilities import get_user_model
 
 User = get_user_model()
-
-
-class BaseFactoryMetaClass(FactoryMetaClass):
-    _meta: type
-
-    def __init__(cls, name, bases, attrs):
-        super().__init__(name, bases, attrs)
-        cls._meta.sqlalchemy_session_persistence = "commit"
 
 
 class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
