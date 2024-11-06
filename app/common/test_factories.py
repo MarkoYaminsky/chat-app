@@ -1,3 +1,5 @@
+from typing import Any
+
 import factory
 
 from app.auth.services import hash_password
@@ -6,18 +8,21 @@ from app.common.utilities import get_user_model
 User = get_user_model()
 
 
-class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
+class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
+    @classmethod
+    def set_sqlalchemy_session(cls, session):
+        cls._meta.sqlalchemy_session = session
+
+
+class UserFactory(BaseFactory):
     class Meta:
         model = User
 
-    default_password = "password"
-
+    password = "password"
     username = factory.Faker("user_name")
 
     @classmethod
-    def create(cls, **kwargs) -> User:
-        if "password" in kwargs:
-            password = hash_password(kwargs.pop("password"))
-        else:
-            password = hash_password(cls.default_password)
-        return super().create(password=password, **kwargs)
+    def _create(cls, model_class, *args, **kwargs: Any) -> User:
+        password = kwargs["password"]
+        kwargs["password"] = hash_password(password)
+        return super()._create(model_class, *args, **kwargs)
